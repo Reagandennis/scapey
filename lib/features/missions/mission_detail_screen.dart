@@ -164,18 +164,36 @@ class _MissionDetailScreenState extends ConsumerState<MissionDetailScreen> {
                   return const Text('No subtasks yet.', style: TextStyle(color: Colors.grey));
                 }
                 return Column(
-                  children: subtasks.map((s) => CheckboxListTile(
+                  children: subtasks.map((s) => ListTile(
                     contentPadding: EdgeInsets.zero,
-                    value: s.isDone,
-                    activeColor: AppTheme.primary,
+                    leading: Checkbox(
+                      value: s.isDone,
+                      activeColor: AppTheme.primary,
+                      onChanged: (v) async {
+                        await ref.read(missionRepositoryProvider).toggleSubtask(s.id, v ?? false);
+                        ref.invalidate(subtasksProvider(_mission.id));
+                      },
+                    ),
                     title: Text(s.title, style: TextStyle(
                       decoration: s.isDone ? TextDecoration.lineThrough : null,
                       color: s.isDone ? Colors.grey : AppTheme.text,
                     )),
-                    onChanged: (v) async {
-                      await ref.read(missionRepositoryProvider).toggleSubtask(s.id, v ?? false);
-                      ref.invalidate(subtasksProvider(_mission.id));
-                    },
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit_outlined, size: 18, color: Colors.grey),
+                          onPressed: () => _editSubtask(s),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline, size: 18, color: Colors.redAccent),
+                          onPressed: () async {
+                            await ref.read(missionRepositoryProvider).deleteSubtask(s.id);
+                            ref.invalidate(subtasksProvider(_mission.id));
+                          },
+                        ),
+                      ],
+                    ),
                   )).toList(),
                 );
               },
@@ -184,6 +202,34 @@ class _MissionDetailScreenState extends ConsumerState<MissionDetailScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _editSubtask(MissionSubtask subtask) async {
+    final controller = TextEditingController(text: subtask.title);
+    final newTitle = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1E1E2E),
+        title: const Text('Edit Subtask'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: 'Subtask title'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: const Text('Save', style: TextStyle(color: AppTheme.primary)),
+          ),
+        ],
+      ),
+    );
+
+    if (newTitle != null && newTitle.isNotEmpty && newTitle != subtask.title) {
+      await ref.read(missionRepositoryProvider).updateSubtask(subtask.id, newTitle);
+      ref.invalidate(subtasksProvider(_mission.id));
+    }
   }
 
   Color _priorityColor(String p) {

@@ -115,6 +115,17 @@ class MissionRepository {
         .eq('id', subtaskId);
   }
 
+  Future<void> updateSubtask(String subtaskId, String title) async {
+    await _client
+        .from('mission_subtasks')
+        .update({'title': title})
+        .eq('id', subtaskId);
+  }
+
+  Future<void> deleteSubtask(String subtaskId) async {
+    await _client.from('mission_subtasks').delete().eq('id', subtaskId);
+  }
+
   Future<void> reorderSubtask(String subtaskId, int sortOrder) async {
     await _client
         .from('mission_subtasks')
