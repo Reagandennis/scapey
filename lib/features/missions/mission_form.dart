@@ -55,14 +55,19 @@ class _MissionFormState extends ConsumerState<MissionForm> {
       } else {
         await repo.createMission(fields);
       }
-      if (mounted) Navigator.of(context).pop();
+      if (mounted) {
+        setState(() => _isLoading = false);
+        Navigator.pop(context);
+      }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.redAccent),
+        );
       }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
     }
+  }
   }
 
   @override
@@ -100,7 +105,7 @@ class _MissionFormState extends ConsumerState<MissionForm> {
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
-            initialValue: _priority,
+            value: _priority,
             dropdownColor: const Color(0xFF1E1E2E),
             decoration: const InputDecoration(labelText: 'Priority'),
             items: const [
@@ -108,7 +113,7 @@ class _MissionFormState extends ConsumerState<MissionForm> {
               DropdownMenuItem(value: 'medium', child: Text('Medium')),
               DropdownMenuItem(value: 'high', child: Text('High')),
             ],
-            onChanged: (v) => setState(() => _priority = v ?? 'medium'),
+            onChanged: _isLoading ? null : (v) => setState(() => _priority = v ?? 'medium'),
           ),
           const SizedBox(height: 24),
           ElevatedButton(
