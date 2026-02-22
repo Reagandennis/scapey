@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'mission_model.dart';
@@ -7,26 +8,26 @@ class MissionRepository {
   MissionRepository(this._client);
 
   Future<List<Mission>> getMissions({String? status, String? priority}) async {
+    // ignore: avoid_print
+    print('[getMissions] Called with status: $status, priority: $priority');
     try {
-      final filters = <String, String>{};
-      if (status != null) filters['status'] = status;
-      if (priority != null) filters['priority'] = priority;
-
       var query = _client.from('missions').select();
-      if (filters.isNotEmpty) query = query.match(filters);
+      if (status != null) query = query.eq('status', status);
+      if (priority != null) query = query.eq('priority', priority);
+      
       final data = await query
           .order('created_at', ascending: false)
-          .timeout(const Duration(seconds: 8), onTimeout: () {
-        // ignore: avoid_print
-        print('Warning: Mission fetch timed out. Returning empty list.');
-        return [];
-      });
-      return (data as List)
-          .map((m) => Mission.fromMap(m as Map<String, dynamic>))
-          .toList();
+          .timeout(const Duration(seconds: 8));
+
+      final missions = (data as List).map((m) => Mission.fromMap(m as Map<String, dynamic>)).toList();
+      
+      // ignore: avoid_print
+      print('[getMissions] Query succeeded. Returning ${missions.length} missions.');
+      return missions;
     } catch (e) {
       // ignore: avoid_print
-      print('Error fetching missions: $e');
+      print('[getMissions] An error or timeout occurred: $e');
+      // If it's a timeout or any other error, return an empty list to unblock the UI.
       return [];
     }
   }
