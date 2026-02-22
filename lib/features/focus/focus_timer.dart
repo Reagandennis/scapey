@@ -68,8 +68,9 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen>
       DateTime.now().millisecondsSinceEpoch ~/ 1000,
     );
     await prefs.setInt(_keyDuration, _totalSeconds);
-    if (_activeMissionId != null)
+    if (_activeMissionId != null) {
       prefs.setString(_keyMissionId, _activeMissionId!);
+    }
   }
 
   Future<void> _clearPersistedState() async {
@@ -154,7 +155,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen>
           // Starfield
           AnimatedBuilder(
             animation: _starController,
-            builder: (_, __) => CustomPaint(
+            builder: (_, child) => CustomPaint(
               painter: _StarfieldPainter(_starController.value),
               child: const SizedBox.expand(),
             ),

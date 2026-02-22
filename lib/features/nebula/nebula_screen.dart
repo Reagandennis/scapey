@@ -41,12 +41,15 @@ class _NebulaScreenState extends ConsumerState<NebulaScreen> {
         _latestResult = entry;
       });
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -108,11 +111,12 @@ class _NebulaScreenState extends ConsumerState<NebulaScreen> {
               error: (e, _) =>
                   Text('$e', style: const TextStyle(color: Colors.redAccent)),
               data: (entries) {
-                if (entries.isEmpty)
+                if (entries.isEmpty) {
                   return const Text(
                     'No entries yet.',
                     style: TextStyle(color: Colors.grey),
                   );
+                }
                 return Column(
                   children: entries
                       .map(

@@ -13,8 +13,12 @@ class MissionRepository {
 
     var query = _client.from('missions').select();
     if (filters.isNotEmpty) query = query.match(filters);
-    final data = await query.order('created_at', ascending: false);
-    return (data as List).map((m) => Mission.fromMap(m as Map<String, dynamic>)).toList();
+    final data = await query
+        .order('created_at', ascending: false)
+        .timeout(const Duration(seconds: 15));
+    return (data as List)
+        .map((m) => Mission.fromMap(m as Map<String, dynamic>))
+        .toList();
   }
 
   Future<Mission> createMission(Map<String, dynamic> fields) async {
@@ -22,7 +26,8 @@ class MissionRepository {
         .from('missions')
         .insert({...fields, 'user_id': _client.auth.currentUser!.id})
         .select()
-        .maybeSingle();
+        .maybeSingle()
+        .timeout(const Duration(seconds: 10));
 
     if (response == null) {
       // Fallback for cases where select is blocked by RLS but insert succeeded
@@ -41,12 +46,22 @@ class MissionRepository {
   }
 
   Future<Mission> updateMission(String id, Map<String, dynamic> fields) async {
-    final data = await _client.from('missions').update(fields).eq('id', id).select().single();
+    final data = await _client
+        .from('missions')
+        .update(fields)
+        .eq('id', id)
+        .select()
+        .single()
+        .timeout(const Duration(seconds: 10));
     return Mission.fromMap(data);
   }
 
   Future<void> deleteMission(String id) async {
-    await _client.from('missions').delete().eq('id', id);
+    await _client
+        .from('missions')
+        .delete()
+        .eq('id', id)
+        .timeout(const Duration(seconds: 10));
   }
 
   Future<List<MissionSubtask>> getSubtasks(String missionId) async {
@@ -55,7 +70,9 @@ class MissionRepository {
         .select()
         .eq('mission_id', missionId)
         .order('sort_order');
-    return (data as List).map((s) => MissionSubtask.fromMap(s as Map<String, dynamic>)).toList();
+    return (data as List)
+        .map((s) => MissionSubtask.fromMap(s as Map<String, dynamic>))
+        .toList();
   }
 
   Future<MissionSubtask> createSubtask({
@@ -63,21 +80,31 @@ class MissionRepository {
     required String title,
     required int sortOrder,
   }) async {
-    final data = await _client.from('mission_subtasks').insert({
-      'mission_id': missionId,
-      'user_id': _client.auth.currentUser!.id,
-      'title': title,
-      'sort_order': sortOrder,
-    }).select().single();
+    final data = await _client
+        .from('mission_subtasks')
+        .insert({
+          'mission_id': missionId,
+          'user_id': _client.auth.currentUser!.id,
+          'title': title,
+          'sort_order': sortOrder,
+        })
+        .select()
+        .single();
     return MissionSubtask.fromMap(data);
   }
 
   Future<void> toggleSubtask(String subtaskId, bool isDone) async {
-    await _client.from('mission_subtasks').update({'is_done': isDone}).eq('id', subtaskId);
+    await _client
+        .from('mission_subtasks')
+        .update({'is_done': isDone})
+        .eq('id', subtaskId);
   }
 
   Future<void> reorderSubtask(String subtaskId, int sortOrder) async {
-    await _client.from('mission_subtasks').update({'sort_order': sortOrder}).eq('id', subtaskId);
+    await _client
+        .from('mission_subtasks')
+        .update({'sort_order': sortOrder})
+        .eq('id', subtaskId);
   }
 }
 
@@ -86,12 +113,22 @@ final missionRepositoryProvider = Provider<MissionRepository>((ref) {
   return MissionRepository(Supabase.instance.client);
 });
 
-final missionsProvider = FutureProvider.family<List<Mission>, Map<String, String?>>((ref, filters) async {
-  final repo = ref.watch(missionRepositoryProvider);
-  return repo.getMissions(status: filters['status'], priority: filters['priority']);
-});
+final missionsProvider =
+    FutureProvider.family<List<Mission>, Map<String, String?>>((
+      ref,
+      filters,
+    ) async {
+      final repo = ref.watch(missionRepositoryProvider);
+      return repo.getMissions(
+        status: filters['status'],
+        priority: filters['priority'],
+      );
+    });
 
-final subtasksProvider = FutureProvider.family<List<MissionSubtask>, String>((ref, missionId) async {
+final subtasksProvider = FutureProvider.family<List<MissionSubtask>, String>((
+  ref,
+  missionId,
+) async {
   final repo = ref.watch(missionRepositoryProvider);
   return repo.getSubtasks(missionId);
 });

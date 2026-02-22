@@ -138,7 +138,7 @@ class _GalaxyCanvasState extends ConsumerState<_GalaxyCanvas>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _pulseController,
-      builder: (_, __) {
+      builder: (_, child) {
         return GestureDetector(
           onTapDown: (details) {
             for (int i = 0; i < _galaxyPositions.length; i++) {

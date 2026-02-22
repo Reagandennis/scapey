@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -51,20 +52,25 @@ class _MissionFormState extends ConsumerState<MissionForm> {
         'estimated_minutes': _minutesController.text.isEmpty ? null : int.tryParse(_minutesController.text),
       };
       if (widget.missionId != null) {
-        await repo.updateMission(widget.missionId!, fields);
+        await repo.updateMission(widget.missionId!, fields).timeout(const Duration(seconds: 10));
       } else {
-        await repo.createMission(fields);
+        await repo.createMission(fields).timeout(const Duration(seconds: 10));
       }
       if (mounted) {
-        setState(() => _isLoading = false);
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.redAccent),
+          SnackBar(
+            content: Text(e is TimeoutException ? 'Request timed out. Please check your connection.' : 'Error: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
         );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
     }
   }

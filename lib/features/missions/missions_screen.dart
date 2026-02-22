@@ -31,10 +31,10 @@ class _MissionsScreenState extends ConsumerState<MissionsScreen> {
       appBar: AppBar(
         title: GestureDetector(
           onLongPress: () async {
+            final messenger = ScaffoldMessenger.of(context);
             try {
               await Supabase.instance.client.from('missions').select().limit(1);
               if (!mounted) return;
-              final messenger = ScaffoldMessenger.of(context);
               messenger.showSnackBar(
                 const SnackBar(
                   content: Text('Supabase Connected! ✅'),
@@ -43,7 +43,6 @@ class _MissionsScreenState extends ConsumerState<MissionsScreen> {
               );
             } catch (e) {
               if (!mounted) return;
-              final messenger = ScaffoldMessenger.of(context);
               messenger.showSnackBar(
                 SnackBar(
                   content: Text('Supabase Connection Failed: $e ❌'),
