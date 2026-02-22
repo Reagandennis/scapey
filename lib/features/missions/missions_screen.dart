@@ -23,45 +23,44 @@ class _MissionsScreenState extends ConsumerState<MissionsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final user = Supabase.instance.client.auth.currentUser;
+    final userName = user?.userMetadata?['user_name'] ?? 'Commander';
+    final avatarUrl = user?.userMetadata?['avatar_url'];
     final missionsAsync = ref.watch(
       missionsProvider({'status': _filterStatus, 'priority': _filterPriority}),
     );
 
     return Scaffold(
       appBar: AppBar(
-        title: GestureDetector(
-          onLongPress: () async {
-            final messenger = ScaffoldMessenger.of(context);
-            try {
-              await Supabase.instance.client.from('missions').select().limit(1);
-              if (!mounted) return;
-              messenger.showSnackBar(
-                const SnackBar(
-                  content: Text('Supabase Connected! ✅'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            } catch (e) {
-              if (!mounted) return;
-              messenger.showSnackBar(
-                SnackBar(
-                  content: Text('Supabase Connection Failed: $e ❌'),
-                  backgroundColor: Colors.redAccent,
-                ),
-              );
-            }
-          },
-          child: const Text('Mission Control'),
-        ),
+        title: Text('Welcome back, $userName'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
+          PopupMenuButton(
+            onSelected: (value) async {
               final router = GoRouter.of(context);
-              await Supabase.instance.client.auth.signOut();
-              router.go('/auth');
+              if (value == 'profile') {
+                router.go('/profile');
+              } else if (value == 'logout') {
+                await Supabase.instance.client.auth.signOut();
+                router.go('/auth');
+              }
             },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'profile',
+                child: Text('Update Profile'),
+              ),
+              const PopupMenuItem(value: 'logout', child: Text('Logout')),
+            ],
+            child: CircleAvatar(
+              backgroundImage: avatarUrl != null
+                  ? NetworkImage(avatarUrl)
+                  : null,
+              child: avatarUrl == null
+                  ? Text(userName.substring(0, 1).toUpperCase())
+                  : null,
+            ),
           ),
+          const SizedBox(width: 16),
         ],
       ),
       body: Column(

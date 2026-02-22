@@ -7,6 +7,7 @@ import '../../features/focus/focus_timer.dart';
 import '../../features/nebula/nebula_screen.dart';
 import '../../features/galaxy/galaxy_map_screen.dart';
 import '../../features/auth/auth_screen.dart';
+import '../../features/profile/profile_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
@@ -46,6 +47,10 @@ class AppRouter {
       GoRoute(
         path: '/galaxy',
         builder: (context, state) => const GalaxyMapScreen(),
+      ),
+      GoRoute(
+        path: '/profile',
+        builder: (context, state) => const ProfileScreen(),
       ),
     ],
   );

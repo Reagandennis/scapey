@@ -7,18 +7,28 @@ class MissionRepository {
   MissionRepository(this._client);
 
   Future<List<Mission>> getMissions({String? status, String? priority}) async {
-    final filters = <String, String>{};
-    if (status != null) filters['status'] = status;
-    if (priority != null) filters['priority'] = priority;
+    try {
+      final filters = <String, String>{};
+      if (status != null) filters['status'] = status;
+      if (priority != null) filters['priority'] = priority;
 
-    var query = _client.from('missions').select();
-    if (filters.isNotEmpty) query = query.match(filters);
-    final data = await query
-        .order('created_at', ascending: false)
-        .timeout(const Duration(seconds: 15));
-    return (data as List)
-        .map((m) => Mission.fromMap(m as Map<String, dynamic>))
-        .toList();
+      var query = _client.from('missions').select();
+      if (filters.isNotEmpty) query = query.match(filters);
+      final data = await query
+          .order('created_at', ascending: false)
+          .timeout(const Duration(seconds: 8), onTimeout: () {
+        // ignore: avoid_print
+        print('Warning: Mission fetch timed out. Returning empty list.');
+        return [];
+      });
+      return (data as List)
+          .map((m) => Mission.fromMap(m as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      // ignore: avoid_print
+      print('Error fetching missions: $e');
+      return [];
+    }
   }
 
   Future<Mission> createMission(Map<String, dynamic> fields) async {
