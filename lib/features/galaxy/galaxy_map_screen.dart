@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'galaxy_repository.dart';
 import '../../core/theme/app_theme.dart';
 
@@ -189,7 +190,7 @@ class _GalaxyMapPainter extends CustomPainter {
     // Stars
     final starPaint = Paint();
     for (int i = 0; i < _starPositions.length; i++) {
-      starPaint.color = Colors.white.withOpacity(0.2 + 0.3 * ((i % 5) / 5));
+      starPaint.color = Colors.white.withValues(alpha: 0.2 + 0.3 * ((i % 5) / 5));
       canvas.drawCircle(
         Offset(_starPositions[i].dx * size.width, _starPositions[i].dy * size.height),
         _starSizes[i], starPaint,
@@ -206,18 +207,18 @@ class _GalaxyMapPainter extends CustomPainter {
       // Outer glow ring (pulsing)
       final glowRadius = 36.0 + pulse * 8;
       canvas.drawCircle(pos, glowRadius, Paint()
-        ..color = AppTheme.primary.withOpacity(0.08 + pulse * 0.06)
+        ..color = AppTheme.primary.withValues(alpha: 0.08 + pulse * 0.06)
         ..style = PaintingStyle.fill);
 
       // Ring
       canvas.drawCircle(pos, 28, Paint()
-        ..color = isSelected ? AppTheme.primary : AppTheme.primary.withOpacity(0.4)
+        ..color = isSelected ? AppTheme.primary : AppTheme.primary.withValues(alpha: 0.4)
         ..style = PaintingStyle.stroke
         ..strokeWidth = isSelected ? 3 : 1.5);
 
       // Center dot
       canvas.drawCircle(pos, isSelected ? 18 : 14, Paint()
-        ..color = isSelected ? AppTheme.primary : AppTheme.primary.withOpacity(0.7)
+        ..color = isSelected ? AppTheme.primary : AppTheme.primary.withValues(alpha: 0.7)
         ..style = PaintingStyle.fill);
 
       // Galaxy icon approximation (spiral dots)
@@ -225,7 +226,7 @@ class _GalaxyMapPainter extends CustomPainter {
         final angle = j * pi / 4;
         final r = 6.0 + j * 0.5;
         final sp = Offset(pos.dx + cos(angle) * r * 0.6, pos.dy + sin(angle) * r * 0.6);
-        canvas.drawCircle(sp, 1.5, Paint()..color = Colors.white.withOpacity(0.5));
+        canvas.drawCircle(sp, 1.5, Paint()..color = Colors.white.withValues(alpha: 0.5));
       }
 
       // Label
@@ -257,7 +258,10 @@ class _GalaxyBottomNav extends StatelessWidget {
       type: BottomNavigationBarType.fixed,
       onTap: (i) {
         switch (i) {
-          case 0: Navigator.of(context).pushReplacementNamed('/'); break;
+          case 0: context.go('/'); break;
+          case 1: context.go('/focus'); break;
+          case 2: context.go('/nebula'); break;
+          case 3: break; // already here
         }
       },
       items: const [

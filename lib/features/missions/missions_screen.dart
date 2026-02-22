@@ -22,11 +22,35 @@ class _MissionsScreenState extends ConsumerState<MissionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final missionsAsync = ref.watch(missionsProvider({'status': _filterStatus, 'priority': _filterPriority}));
+    final missionsAsync = ref.watch(
+      missionsProvider({'status': _filterStatus, 'priority': _filterPriority}),
+    );
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mission Control'),
+        title: GestureDetector(
+          onLongPress: () async {
+            try {
+              await Supabase.instance.client.from('missions').select().limit(1);
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Supabase Connected! ✅'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            } catch (e) {
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Supabase Connection Failed: $e ❌'),
+                  backgroundColor: Colors.redAccent,
+                ),
+              );
+            }
+          },
+          child: const Text('Mission Control'),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -35,7 +59,7 @@ class _MissionsScreenState extends ConsumerState<MissionsScreen> {
               await Supabase.instance.client.auth.signOut();
               router.go('/auth');
             },
-          )
+          ),
         ],
       ),
       body: Column(
@@ -50,7 +74,10 @@ class _MissionsScreenState extends ConsumerState<MissionsScreen> {
             child: missionsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Center(
-                child: Text('Error loading missions: $e', style: const TextStyle(color: Colors.redAccent)),
+                child: Text(
+                  'Error loading missions: $e',
+                  style: const TextStyle(color: Colors.redAccent),
+                ),
               ),
               data: (missions) {
                 if (missions.isEmpty) {
@@ -58,11 +85,21 @@ class _MissionsScreenState extends ConsumerState<MissionsScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.rocket_launch_outlined, size: 64, color: Colors.grey),
+                        Icon(
+                          Icons.rocket_launch_outlined,
+                          size: 64,
+                          color: Colors.grey,
+                        ),
                         SizedBox(height: 16),
-                        Text('No missions yet, Commander.', style: TextStyle(color: Colors.grey)),
+                        Text(
+                          'No missions yet, Commander.',
+                          style: TextStyle(color: Colors.grey),
+                        ),
                         SizedBox(height: 8),
-                        Text('Tap + to create your first mission.', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                        Text(
+                          'Tap + to create your first mission.',
+                          style: TextStyle(color: Colors.grey, fontSize: 12),
+                        ),
                       ],
                     ),
                   );
@@ -70,7 +107,8 @@ class _MissionsScreenState extends ConsumerState<MissionsScreen> {
                 return ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: missions.length,
-                  itemBuilder: (context, i) => _MissionTile(mission: missions[i]),
+                  itemBuilder: (context, i) =>
+                      _MissionTile(mission: missions[i]),
                 );
               },
             ),
@@ -116,11 +154,23 @@ class _FilterBar extends StatelessWidget {
         children: [
           buildChip('All', currentStatus == null, () => onStatusChanged(null)),
           const SizedBox(width: 8),
-          buildChip('Pending', currentStatus == 'pending', () => onStatusChanged('pending')),
+          buildChip(
+            'Pending',
+            currentStatus == 'pending',
+            () => onStatusChanged('pending'),
+          ),
           const SizedBox(width: 8),
-          buildChip('Active', currentStatus == 'active', () => onStatusChanged('active')),
+          buildChip(
+            'Active',
+            currentStatus == 'active',
+            () => onStatusChanged('active'),
+          ),
           const SizedBox(width: 8),
-          buildChip('Done', currentStatus == 'complete', () => onStatusChanged('complete')),
+          buildChip(
+            'Done',
+            currentStatus == 'complete',
+            () => onStatusChanged('complete'),
+          ),
         ],
       ),
     );
@@ -130,7 +180,13 @@ class _FilterBar extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Chip(
-        label: Text(label, style: TextStyle(color: selected ? Colors.white : Colors.grey, fontSize: 12)),
+        label: Text(
+          label,
+          style: TextStyle(
+            color: selected ? Colors.white : Colors.grey,
+            fontSize: 12,
+          ),
+        ),
         backgroundColor: selected ? AppTheme.primary : const Color(0xFF1E1E2E),
         padding: EdgeInsets.zero,
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -145,9 +201,12 @@ class _MissionTile extends ConsumerWidget {
 
   Color get _priorityColor {
     switch (mission.priority) {
-      case 'high': return Colors.redAccent;
-      case 'medium': return AppTheme.accent;
-      default: return Colors.green;
+      case 'high':
+        return Colors.redAccent;
+      case 'medium':
+        return AppTheme.accent;
+      default:
+        return Colors.green;
     }
   }
 
@@ -160,10 +219,7 @@ class _MissionTile extends ConsumerWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          radius: 6,
-          backgroundColor: _priorityColor,
-        ),
+        leading: CircleAvatar(radius: 6, backgroundColor: _priorityColor),
         title: Text(
           mission.title,
           style: TextStyle(
@@ -173,22 +229,27 @@ class _MissionTile extends ConsumerWidget {
           ),
         ),
         subtitle: mission.estimatedMinutes != null
-            ? Text('${mission.estimatedMinutes} min · ${mission.priority}',
-                style: const TextStyle(color: Colors.grey, fontSize: 12))
+            ? Text(
+                '${mission.estimatedMinutes} min · ${mission.priority}',
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
+              )
             : null,
         trailing: Checkbox(
           value: isComplete,
           activeColor: AppTheme.primary,
           onChanged: (v) async {
             await ref.read(missionRepositoryProvider).updateMission(
-              mission.id, {'status': v == true ? 'complete' : 'pending'},
+              mission.id,
+              {'status': v == true ? 'complete' : 'pending'},
             );
             ref.invalidate(missionsProvider);
           },
         ),
         onTap: () {
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => MissionDetailScreen(mission: mission)),
+            MaterialPageRoute(
+              builder: (_) => MissionDetailScreen(mission: mission),
+            ),
           );
         },
       ),
@@ -210,17 +271,36 @@ class _BottomNav extends StatelessWidget {
       type: BottomNavigationBarType.fixed,
       onTap: (i) {
         switch (i) {
-          case 0: context.go('/'); break;
-          case 1: context.go('/focus'); break;
-          case 2: context.go('/nebula'); break;
-          case 3: context.go('/galaxy'); break;
+          case 0:
+            break; // already here
+          case 1:
+            context.go('/focus');
+            break;
+          case 2:
+            context.go('/nebula');
+            break;
+          case 3:
+            context.go('/galaxy');
+            break;
         }
       },
       items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.rocket_launch), label: 'Missions'),
-        BottomNavigationBarItem(icon: Icon(Icons.timer_outlined), label: 'Focus'),
-        BottomNavigationBarItem(icon: Icon(Icons.cloud_circle_outlined), label: 'Nebula'),
-        BottomNavigationBarItem(icon: Icon(Icons.map_outlined), label: 'Galaxy'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.rocket_launch),
+          label: 'Missions',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.timer_outlined),
+          label: 'Focus',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.cloud_circle_outlined),
+          label: 'Nebula',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.map_outlined),
+          label: 'Galaxy',
+        ),
       ],
     );
   }

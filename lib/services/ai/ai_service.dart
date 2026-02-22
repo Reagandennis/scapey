@@ -45,12 +45,12 @@ class NebulaResult {
   });
 
   factory NebulaResult.fromMap(Map<String, dynamic> map) {
-    List<String> _asList(dynamic v) =>
+    List<String> asList(dynamic v) =>
         v is List ? v.map((e) => e.toString()).toList() : [];
     return NebulaResult(
       summary: map['summary'] as String? ?? '',
-      steps: _asList(map['steps']),
-      risks: _asList(map['risks']),
+      steps: asList(map['steps']),
+      risks: asList(map['risks']),
       timeline: map['timeline'] as String? ?? '',
       revenueModel: map['revenue_model'] as String?,
     );

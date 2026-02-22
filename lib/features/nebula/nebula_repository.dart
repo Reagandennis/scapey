@@ -19,14 +19,14 @@ class NebulaEntry {
   });
 
   factory NebulaEntry.fromMap(Map<String, dynamic> m) {
-    List<String> _asList(dynamic v) =>
+    List<String> asList(dynamic v) =>
         v is List ? v.map((e) => e.toString()).toList() : [];
     return NebulaEntry(
       id: m['id'] as String, userId: m['user_id'] as String,
       rawInput: m['raw_input'] as String,
       summary: m['summary'] as String?,
-      steps: _asList(m['steps']),
-      risks: _asList(m['risks']),
+      steps: asList(m['steps']),
+      risks: asList(m['risks']),
       timeline: m['timeline'] as String?,
       revenueModel: m['revenue_model'] as String?,
       createdAt: DateTime.parse(m['created_at'] as String),
