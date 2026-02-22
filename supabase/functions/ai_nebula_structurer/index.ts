@@ -5,7 +5,7 @@ const corsHeaders = {
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const GEMINI_API_KEY = "AIzaSyDKTZom8TRA3BWcsSl8LxVSl7DkFS4lVn0";
+const GEMINI_API_KEY = "AIzaSyCtzRdRjaXDembyMJp9qB0pP73vMS3Ikc4";
 
 serve(async (req: Request) => {
     if (req.method === "OPTIONS") {
@@ -30,7 +30,7 @@ serve(async (req: Request) => {
         Raw Thought: ${raw_input}`;
 
         const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },

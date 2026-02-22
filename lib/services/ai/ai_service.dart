@@ -63,6 +63,12 @@ class AiService {
   AiService(this._client);
 
   Future<MissionPlanResult> planMission(String idea) async {
+    final session = _client.auth.currentSession;
+    print('[ planMission] Session status: ${session != null ? 'Authenticated' : 'NOT Authenticated'}');
+    if (session != null) {
+      print('[ planMission] JWT starts with: ${session.accessToken.substring(0, 10)}...');
+    }
+    
     final response = await _client.functions.invoke(
       'ai_mission_plan',
       body: {'idea': idea},
