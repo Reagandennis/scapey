@@ -27,7 +27,7 @@ class _MissionsScreenState extends ConsumerState<MissionsScreen> {
     final userName = user?.userMetadata?['user_name'] ?? 'Commander';
     final avatarUrl = user?.userMetadata?['avatar_url'];
     final missionsAsync = ref.watch(
-      missionsProvider({'status': _filterStatus, 'priority': _filterPriority}),
+      missionsProvider((status: _filterStatus, priority: _filterPriority)),
     );
 
     return Scaffold(

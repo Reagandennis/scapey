@@ -8,26 +8,31 @@ class MissionRepository {
   MissionRepository(this._client);
 
   Future<List<Mission>> getMissions({String? status, String? priority}) async {
-    // ignore: avoid_print
-    print('[getMissions] Called with status: $status, priority: $priority');
+    final user = _client.auth.currentUser;
+    if (user == null) {
+      print('[getMissions] No active user session. Returning empty list.');
+      return [];
+    }
+
+    print(
+      '[getMissions] Fetching from Supabase... (status: $status, priority: $priority)',
+    );
     try {
       var query = _client.from('missions').select();
       if (status != null) query = query.eq('status', status);
       if (priority != null) query = query.eq('priority', priority);
-      
+
       final data = await query
           .order('created_at', ascending: false)
-          .timeout(const Duration(seconds: 8));
+          .timeout(const Duration(seconds: 15));
 
-      final missions = (data as List).map((m) => Mission.fromMap(m as Map<String, dynamic>)).toList();
-      
-      // ignore: avoid_print
-      print('[getMissions] Query succeeded. Returning ${missions.length} missions.');
+      final missions = (data as List)
+          .map((m) => Mission.fromMap(m as Map<String, dynamic>))
+          .toList();
+      print('[getMissions] Success! Loaded ${missions.length} missions.');
       return missions;
     } catch (e) {
-      // ignore: avoid_print
-      print('[getMissions] An error or timeout occurred: $e');
-      // If it's a timeout or any other error, return an empty list to unblock the UI.
+      print('[getMissions] Error/Timeout: $e');
       return [];
     }
   }
@@ -41,7 +46,6 @@ class MissionRepository {
         .timeout(const Duration(seconds: 10));
 
     if (response == null) {
-      // Fallback for cases where select is blocked by RLS but insert succeeded
       return Mission(
         id: '',
         userId: _client.auth.currentUser!.id,
@@ -124,17 +128,16 @@ final missionRepositoryProvider = Provider<MissionRepository>((ref) {
   return MissionRepository(Supabase.instance.client);
 });
 
-final missionsProvider =
-    FutureProvider.family<List<Mission>, Map<String, String?>>((
-      ref,
-      filters,
-    ) async {
-      final repo = ref.watch(missionRepositoryProvider);
-      return repo.getMissions(
-        status: filters['status'],
-        priority: filters['priority'],
-      );
-    });
+// Using a Record for the family key to ensure value-based equality and avoid infinite loops
+typedef MissionFilters = ({String? status, String? priority});
+
+final missionsProvider = FutureProvider.family<List<Mission>, MissionFilters>((
+  ref,
+  filters,
+) async {
+  final repo = ref.watch(missionRepositoryProvider);
+  return repo.getMissions(status: filters.status, priority: filters.priority);
+});
 
 final subtasksProvider = FutureProvider.family<List<MissionSubtask>, String>((
   ref,
