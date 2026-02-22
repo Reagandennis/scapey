@@ -5,7 +5,7 @@ const corsHeaders = {
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const GEMINI_API_KEY = "AIzaSyCtzRdRjaXDembyMJp9qB0pP73vMS3Ikc4";
+const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
 
 serve(async (req: Request) => {
     if (req.method === "OPTIONS") {
