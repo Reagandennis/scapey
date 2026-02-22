@@ -68,7 +68,6 @@ class _MissionFormState extends ConsumerState<MissionForm> {
       }
     }
   }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +104,7 @@ class _MissionFormState extends ConsumerState<MissionForm> {
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
-            value: _priority,
+            initialValue: _priority,
             dropdownColor: const Color(0xFF1E1E2E),
             decoration: const InputDecoration(labelText: 'Priority'),
             items: const [

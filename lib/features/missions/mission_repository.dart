@@ -18,12 +18,26 @@ class MissionRepository {
   }
 
   Future<Mission> createMission(Map<String, dynamic> fields) async {
-    final data = await _client
+    final response = await _client
         .from('missions')
         .insert({...fields, 'user_id': _client.auth.currentUser!.id})
         .select()
-        .single();
-    return Mission.fromMap(data);
+        .maybeSingle();
+
+    if (response == null) {
+      // Fallback for cases where select is blocked by RLS but insert succeeded
+      return Mission(
+        id: '',
+        userId: _client.auth.currentUser!.id,
+        title: fields['title'],
+        description: fields['description'],
+        priority: fields['priority'] ?? 'medium',
+        status: 'pending',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+    }
+    return Mission.fromMap(response);
   }
 
   Future<Mission> updateMission(String id, Map<String, dynamic> fields) async {

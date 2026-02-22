@@ -34,7 +34,8 @@ class _MissionsScreenState extends ConsumerState<MissionsScreen> {
             try {
               await Supabase.instance.client.from('missions').select().limit(1);
               if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
+              final messenger = ScaffoldMessenger.of(context);
+              messenger.showSnackBar(
                 const SnackBar(
                   content: Text('Supabase Connected! ✅'),
                   backgroundColor: Colors.green,
@@ -42,7 +43,8 @@ class _MissionsScreenState extends ConsumerState<MissionsScreen> {
               );
             } catch (e) {
               if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
+              final messenger = ScaffoldMessenger.of(context);
+              messenger.showSnackBar(
                 SnackBar(
                   content: Text('Supabase Connection Failed: $e ❌'),
                   backgroundColor: Colors.redAccent,
