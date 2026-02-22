@@ -8,6 +8,7 @@ import 'mission_model.dart';
 import 'mission_form.dart';
 import 'mission_detail_screen.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/spacey_bottom_nav.dart';
 
 class MissionsScreen extends ConsumerStatefulWidget {
   const MissionsScreen({super.key});
@@ -128,7 +129,7 @@ class _MissionsScreenState extends ConsumerState<MissionsScreen> {
         },
         child: const Icon(Icons.add),
       ),
-      bottomNavigationBar: _BottomNav(currentIndex: 0),
+      bottomNavigationBar: const SpaceyBottomNav(currentIndex: 0),
     );
   }
 }
@@ -253,55 +254,6 @@ class _MissionTile extends ConsumerWidget {
           );
         },
       ),
-    );
-  }
-}
-
-class _BottomNav extends StatelessWidget {
-  final int currentIndex;
-  const _BottomNav({required this.currentIndex});
-
-  @override
-  Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      backgroundColor: const Color(0xFF1E1E2E),
-      selectedItemColor: AppTheme.primary,
-      unselectedItemColor: Colors.grey,
-      currentIndex: currentIndex,
-      type: BottomNavigationBarType.fixed,
-      onTap: (i) {
-        switch (i) {
-          case 0:
-            break; // already here
-          case 1:
-            context.go('/focus');
-            break;
-          case 2:
-            context.go('/nebula');
-            break;
-          case 3:
-            context.go('/galaxy');
-            break;
-        }
-      },
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.rocket_launch),
-          label: 'Missions',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.timer_outlined),
-          label: 'Focus',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.cloud_circle_outlined),
-          label: 'Nebula',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.map_outlined),
-          label: 'Galaxy',
-        ),
-      ],
     );
   }
 }

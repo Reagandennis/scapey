@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import 'nebula_repository.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/spacey_bottom_nav.dart';
 import '../../services/ai/ai_service.dart';
 
 class NebulaScreen extends ConsumerStatefulWidget {
@@ -144,7 +144,7 @@ class _NebulaScreenState extends ConsumerState<NebulaScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: _NebulaBottomNav(),
+      bottomNavigationBar: const SpaceyBottomNav(currentIndex: 2),
     );
   }
 }
@@ -216,52 +216,6 @@ class _NebulaResultCard extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _NebulaBottomNav extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      backgroundColor: const Color(0xFF1E1E2E),
-      selectedItemColor: AppTheme.primary,
-      unselectedItemColor: Colors.grey,
-      currentIndex: 2,
-      type: BottomNavigationBarType.fixed,
-      onTap: (i) {
-        switch (i) {
-          case 0:
-            context.go('/');
-            break;
-          case 1:
-            context.go('/focus');
-            break;
-          case 2:
-            break; // already here
-          case 3:
-            context.go('/galaxy');
-            break;
-        }
-      },
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.rocket_launch),
-          label: 'Missions',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.timer_outlined),
-          label: 'Focus',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.cloud_circle_outlined),
-          label: 'Nebula',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.map_outlined),
-          label: 'Galaxy',
-        ),
-      ],
     );
   }
 }
