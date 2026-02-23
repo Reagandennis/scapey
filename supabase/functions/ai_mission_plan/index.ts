@@ -1,18 +1,20 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+/// <reference lib="deno.ns" />
+import { corsHeaders } from "../_shared/cors.ts";
 
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+const MODEL_NAME = "gemini-2.0-flash";
 
-serve(async (req: Request) => {
+
+Deno.serve(async (req: Request) => {
     if (req.method === "OPTIONS") {
         return new Response("ok", { headers: corsHeaders });
     }
 
     try {
+        if (!GEMINI_API_KEY) {
+            throw new Error("Missing GEMINI_API_KEY environment variable.");
+        }
+
         const { idea } = await req.json();
 
         if (!idea) {
@@ -30,7 +32,7 @@ serve(async (req: Request) => {
         Idea: ${idea}`;
 
         const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${GEMINI_API_KEY}`,
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -43,12 +45,12 @@ serve(async (req: Request) => {
             }
         );
 
-        const result = await response.json();
-
         if (!response.ok) {
-            throw new Error(`Gemini API Error: ${JSON.stringify(result)}`);
+            const errorBody = await response.json();
+            throw new Error(`Gemini API Error: ${response.status} ${response.statusText} - ${JSON.stringify(errorBody)}`);
         }
 
+        const result = await response.json();
         const aiText = result.candidates[0].content.parts[0].text;
         const aiResponse = JSON.parse(aiText);
 

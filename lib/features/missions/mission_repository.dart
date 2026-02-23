@@ -24,7 +24,8 @@ class MissionRepository {
 
       final data = await query
           .order('created_at', ascending: false)
-          .timeout(const Duration(seconds: 15));
+          .timeout(const Duration(seconds: 30));
+
 
       final missions = (data as List)
           .map((m) => Mission.fromMap(m as Map<String, dynamic>))
